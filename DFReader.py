@@ -789,10 +789,10 @@ class DFReader_binary(DFReader):
         while ofs+3 < self.data_len:
             hdr = self.data_map[ofs:ofs+3]
             if hdr[0] != HEAD1 or hdr[1] != HEAD2:
-                # avoid end of file garbage, 528 bytes has been use consistently throughout this implementation
+                # avoid end of file garbage, 592 bytes has been use consistently throughout this implementation
                 # but it needs to be at least 249 bytes which is the block based logging page size (256) less a 6 byte header and
                 # one byte of data. Block based logs are sized in pages which means they can have up to 249 bytes of trailing space.
-                if self.data_len - ofs >= 528 or self.data_len < 528:
+                if self.data_len - ofs >= 592 or self.data_len < 592:
                     print("bad header 0x%02x 0x%02x at %d" % (u_ord(hdr[0]), u_ord(hdr[1]), ofs), file=sys.stderr)
                 ofs += 1
                 continue
@@ -801,7 +801,7 @@ class DFReader_binary(DFReader):
 
             if lengths[mtype] == -1:
                 if not mtype in self.formats:
-                    if self.data_len - ofs >= 528 or self.data_len < 528:
+                    if self.data_len - ofs >= 592 or self.data_len < 592:
                         print("unknown msg type 0x%02x (%u) at %d" % (mtype, mtype, ofs),
                               file=sys.stderr)
                     break
@@ -935,7 +935,7 @@ class DFReader_binary(DFReader):
                 # signature found
                 if skip_type is not None:
                     # emit message about skipped bytes
-                    if self.remaining >= 528:
+                    if self.remaining >= 592:
                         # APM logs often contain garbage at end
                         skip_bytes = self.offset - skip_start
                         print("Skipped %u bad bytes in log at offset %u, type=%s (prev=%s)" %
@@ -975,7 +975,7 @@ class DFReader_binary(DFReader):
             elements = list(self.unpackers[msg_type](body))
         except Exception as ex:
             print(ex)
-            if self.remaining < 528:
+            if self.remaining < 592:
                 # we can have garbage at the end of an APM2 log
                 return None
             # we should also cope with other corruption; logs
